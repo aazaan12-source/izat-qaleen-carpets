@@ -31,12 +31,27 @@ function getSupabaseConfig() {
 
 function supabaseHeaders(extra?: HeadersInit): HeadersInit {
   const { secretKey } = getSupabaseConfig();
-
-  return {
+  const headers: Record<string, string> = {
     apikey: secretKey || "",
-    authorization: `Bearer ${secretKey || ""}`,
-    ...extra
   };
+
+  if (extra instanceof Headers) {
+    extra.forEach((value, key) => {
+      headers[key] = value;
+    });
+  } else if (Array.isArray(extra)) {
+    extra.forEach(([key, value]) => {
+      headers[key] = value;
+    });
+  } else if (extra) {
+    Object.assign(headers, extra);
+  }
+
+  if (secretKey && !secretKey.startsWith("sb_secret_") && !secretKey.startsWith("sb_publishable_")) {
+    headers.authorization = `Bearer ${secretKey}`;
+  }
+
+  return headers;
 }
 
 async function supabaseJson<T>(path: string, init?: RequestInit): Promise<T> {
