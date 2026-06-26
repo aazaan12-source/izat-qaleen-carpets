@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="800" viewBox="0 0 360 400" role="img" aria-label="Emerald Tribal Runner 2.5 x 8 ft">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="11" stdDeviation="10" flood-color="#1b140d" flood-opacity=".22"/>
+    </filter>
+    <linearGradient id="pile" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0e5a47"/>
+      <stop offset=".55" stop-color="#07352c"/>
+      <stop offset="1" stop-color="#0e5a47"/>
+    </linearGradient>
+    <pattern id="threads" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 3 H8 M2 0 V8" stroke="#ffffff" stroke-opacity=".08" stroke-width="1"/>
+      <path d="M0 7 H8" stroke="#000000" stroke-opacity=".09" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="360" height="400" fill="#f4f1ec"/>
+  <ellipse cx="180" cy="365" rx="55.00000000000001" ry="18" fill="#000" opacity=".1"/>
+  <g filter="url(#shadow)">
+    <path d="M140 24 v16 M140 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/><path d="M156 24 v16 M156 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/><path d="M172 24 v16 M172 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/><path d="M188 24 v16 M188 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/><path d="M204 24 v16 M204 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/><path d="M220 24 v16 M220 360 v16" stroke="#d9c8a4" stroke-width="2" opacity=".8"/>
+    <rect x="130" y="40" width="100" height="320" rx="10" fill="url(#pile)"/>
+    <rect x="130" y="40" width="100" height="320" rx="10" fill="url(#threads)"/>
+    <rect x="138" y="48" width="84" height="304" rx="8" fill="none" stroke="#c9a350" stroke-width="5"/>
+    <rect x="148" y="58" width="64" height="284" rx="6" fill="none" stroke="#eff0d4" stroke-width="2" opacity=".8"/>
+    <path d="M144 52 l8 8 l-8 8 l-8 -8Z" fill="#c9a350" opacity=".82"/><path d="M144 348 l8 -8 l-8 -8 l-8 8Z" fill="#c9a350" opacity=".82"/><path d="M166 52 l8 8 l-8 8 l-8 -8Z" fill="#c9a350" opacity=".82"/><path d="M166 348 l8 -8 l-8 -8 l-8 8Z" fill="#c9a350" opacity=".82"/><path d="M188 52 l8 8 l-8 8 l-8 -8Z" fill="#c9a350" opacity=".82"/><path d="M188 348 l8 -8 l-8 -8 l-8 8Z" fill="#c9a350" opacity=".82"/><path d="M210 52 l8 8 l-8 8 l-8 -8Z" fill="#c9a350" opacity=".82"/><path d="M210 348 l8 -8 l-8 -8 l-8 8Z" fill="#c9a350" opacity=".82"/><path d="M142 60 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 60 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 82 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 82 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 104 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 104 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 126 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 126 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 148 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 148 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 170 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 170 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 192 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 192 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 214 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 214 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 236 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 236 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 258 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 258 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 280 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 280 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 302 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 302 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 324 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 324 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M142 346 l8 8 l8 -8 l-8 -8Z" fill="#eff0d4" opacity=".65"/><path d="M218 346 l-8 8 l-8 -8 l8 -8Z" fill="#eff0d4" opacity=".65"/>
+    
+        <path d="M180 95.6 L193.056 114.8 L180 134 L166.944 114.8Z" fill="#c9a350" opacity=".88"/>
+        <circle cx="180" cy="114.8" r="4.608" fill="#07352c" opacity=".86"/>
+        <path d="M180 152.4 L193.056 171.6 L180 190.79999999999998 L166.944 171.6Z" fill="#eff0d4" opacity=".88"/>
+        <circle cx="180" cy="171.6" r="4.608" fill="#07352c" opacity=".86"/>
+        <path d="M180 209.2 L193.056 228.39999999999998 L180 247.59999999999997 L166.944 228.39999999999998Z" fill="#c9a350" opacity=".88"/>
+        <circle cx="180" cy="228.39999999999998" r="4.608" fill="#07352c" opacity=".86"/>
+        <path d="M180 266 L193.056 285.2 L180 304.4 L166.944 285.2Z" fill="#eff0d4" opacity=".88"/>
+        <circle cx="180" cy="285.2" r="4.608" fill="#07352c" opacity=".86"/>
+    <path d="M138 326 C168 342 198 316 222 336" fill="none" stroke="#fff" stroke-width="4" opacity=".11"/>
+  </g>
+</svg>

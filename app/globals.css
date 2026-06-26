@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 25 65% 93%;
+  --foreground: 0 0% 7%;
+  --border: 31 26% 76%;
+  --input: 31 26% 76%;
+  --ring: 25 24% 74%;
+  --radius: 0.5rem;
+  --qaleen-base: #F8EDE3;
+  --qaleen-panel: #DFD3C3;
+  --qaleen-accent: #D0B8A8;
+  --qaleen-ink: #111111;
+}
+
+* {
+  box-sizing: border-box;
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--qaleen-base);
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@media (display-mode: standalone) {
+  body {
+    background: var(--qaleen-base);
+  }
+}
