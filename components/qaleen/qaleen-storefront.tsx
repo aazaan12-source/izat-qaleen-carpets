@@ -448,9 +448,9 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
       </section>
 
       {selected ? (
-        <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 px-3 py-4 backdrop-blur-sm sm:px-5 sm:py-6" role="dialog" aria-modal="true" aria-label={`${selected.name} detail view`}>
-          <div className="mx-auto grid h-[calc(100dvh-2rem)] max-w-6xl grid-rows-[minmax(0,45%)_minmax(0,55%)] overflow-hidden bg-white shadow-2xl sm:h-[calc(100dvh-3rem)] lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-1">
-            <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-2 bg-[#F8EDE3] p-3 sm:p-5">
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 px-2 py-2 backdrop-blur-sm sm:px-5 sm:py-6" role="dialog" aria-modal="true" aria-label={`${selected.name} detail view`}>
+          <div className="mx-auto grid h-[calc(100dvh-1rem)] max-w-6xl grid-rows-[minmax(0,40dvh)_minmax(0,1fr)] overflow-hidden bg-white shadow-2xl sm:h-[calc(100dvh-3rem)] sm:grid-rows-[minmax(0,45%)_minmax(0,55%)] lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-1">
+            <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-2 bg-[#F8EDE3] p-2 sm:p-5">
               <button className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden border bg-white p-2" onClick={() => setImageZoomed((value) => !value)} aria-label="Zoom product image">
                 <img src={activeImage || selected.image} alt={selected.name} className={`max-h-full max-w-full object-contain transition duration-300 ${imageZoomed ? "scale-150 cursor-zoom-out" : "cursor-zoom-in"}`} />
               </button>
@@ -469,8 +469,8 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
               </div>
             </div>
 
-            <aside className="min-h-0 overflow-y-scroll border-t bg-white pb-24 [scrollbar-gutter:stable] sm:pb-24 lg:border-l lg:border-t-0 lg:pb-5">
-              <div className="sticky top-0 z-10 border-b bg-white/95 p-4 backdrop-blur sm:p-5">
+            <aside className="flex min-h-0 flex-col border-t bg-white lg:border-l lg:border-t-0">
+              <div className="shrink-0 border-b bg-white p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     {selected.badge ? <p className="mb-2 inline-flex bg-[#111111] px-2 py-1 text-[10px] font-black uppercase text-white">{selected.badge}</p> : null}
@@ -489,26 +489,28 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-2 px-4 text-sm sm:px-5">
-                <DetailItem label="Type" value={selected.type} />
-                <DetailItem label="Size" value={selected.dimensions} />
-                <DetailItem label="Material" value={selected.material} />
-                <DetailItem label="Color" value={selected.color} />
-                <DetailItem label="Origin" value={selected.origin} />
-                <DetailItem label="Stock" value={`${selected.status || "Available"} | ${selected.stock} available`} />
+              <div className="min-h-0 flex-1 overflow-y-auto pb-4 [scrollbar-gutter:stable]">
+                <div className="mt-4 grid grid-cols-2 gap-2 px-4 text-sm sm:mt-5 sm:px-5">
+                  <DetailItem label="Type" value={selected.type} />
+                  <DetailItem label="Size" value={selected.dimensions} />
+                  <DetailItem label="Material" value={selected.material} />
+                  <DetailItem label="Color" value={selected.color} />
+                  <DetailItem label="Origin" value={selected.origin} />
+                  <DetailItem label="Stock" value={`${selected.status || "Available"} | ${selected.stock} available`} />
+                </div>
+
+                <div className="mx-4 mt-5 border bg-[#DFD3C3] p-3 sm:mx-5">
+                  <p className="text-xs font-black uppercase">Quality notes</p>
+                  <p className="mt-2 text-sm leading-6 text-[#555555]">{selected.description}</p>
+                  <ul className="mt-3 grid gap-2 text-xs leading-5 text-[#555555]">
+                    <li><span className="font-black text-[#111111]">Detail view:</span> Clicked image opens large so customers can inspect border, medallion, pile texture, and finishing.</li>
+                    <li><span className="font-black text-[#111111]">Use:</span> Suitable for premium living rooms, bedrooms, offices, corridors, and display areas based on size.</li>
+                    <li><span className="font-black text-[#111111]">Care:</span> Vacuum gently and rotate periodically for even wear.</li>
+                  </ul>
+                </div>
               </div>
 
-              <div className="mx-4 mt-5 border bg-[#DFD3C3] p-3 sm:mx-5">
-                <p className="text-xs font-black uppercase">Quality notes</p>
-                <p className="mt-2 text-sm leading-6 text-[#555555]">{selected.description}</p>
-                <ul className="mt-3 grid gap-2 text-xs leading-5 text-[#555555]">
-                  <li><span className="font-black text-[#111111]">Detail view:</span> Clicked image opens large so customers can inspect border, medallion, pile texture, and finishing.</li>
-                  <li><span className="font-black text-[#111111]">Use:</span> Suitable for premium living rooms, bedrooms, offices, corridors, and display areas based on size.</li>
-                  <li><span className="font-black text-[#111111]">Care:</span> Vacuum gently and rotate periodically for even wear.</li>
-                </ul>
-              </div>
-
-              <div className="sticky bottom-0 mt-5 grid gap-2 border-t bg-white px-4 py-3 sm:grid-cols-2 sm:px-5 lg:static lg:mx-5 lg:grid-cols-1 lg:border-t-0 lg:px-0">
+              <div className="shrink-0 grid gap-2 border-t bg-white px-4 py-3 sm:grid-cols-2 sm:px-5 lg:mx-5 lg:grid-cols-1 lg:px-0">
                 <button disabled={selected.status === "Sold"} onClick={() => changeCart(selected.id, 1)} className="inline-flex h-11 items-center justify-center gap-2 bg-[#111111] px-4 text-xs font-black uppercase text-white disabled:bg-[#999999]">
                   Add to cart <ShoppingBag className="h-4 w-4" />
                 </button>
