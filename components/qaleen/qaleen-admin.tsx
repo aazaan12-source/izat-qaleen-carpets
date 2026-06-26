@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import { Eye, ImagePlus, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import {
+  fetchQaleenCatalog,
+  fetchQaleenOrders,
+  saveQaleenCatalog,
+  updateQaleenOrderStatus,
+  uploadQaleenImage
+} from "@/lib/qaleen-api-client";
+import {
   defaultQaleenCatalog,
   formatQaleenMoney,
   qaleenAdminSessionKey,
@@ -39,6 +46,14 @@ const emptyProduct = (): QaleenProduct => ({
   isActive: true
 });
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.readAsDataURL(file);
+  });
+}
+
 export function QaleenAdmin() {
   const [catalog, setCatalog] = useState<QaleenCatalog>(defaultQaleenCatalog);
   const [selectedId, setSelectedId] = useState(defaultQaleenCatalog.products[0]?.id || "");
@@ -50,6 +65,8 @@ export function QaleenAdmin() {
   const [orders, setOrders] = useState<QaleenOrder[]>([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     try {
       const stored = window.localStorage.getItem(qaleenCatalogStorageKey);
       if (stored) {
@@ -63,6 +80,28 @@ export function QaleenAdmin() {
     } catch {
       setCatalog(defaultQaleenCatalog);
     }
+
+    fetchQaleenCatalog().then((remoteCatalog) => {
+      if (!isMounted || !remoteCatalog) return;
+      const loaded = normalizeQaleenCatalog(remoteCatalog);
+      setCatalog(loaded);
+      setSelectedId(loaded.products[0]?.id || "");
+      window.localStorage.setItem(qaleenCatalogStorageKey, JSON.stringify(loaded));
+    }).catch(() => {
+      // Keep local storage as the admin fallback.
+    });
+
+    fetchQaleenOrders().then((remoteOrders) => {
+      if (!isMounted || !remoteOrders) return;
+      setOrders(remoteOrders);
+      window.localStorage.setItem(qaleenOrderStorageKey, JSON.stringify(remoteOrders));
+    }).catch(() => {
+      // Keep local orders if Supabase is unavailable.
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const selectedProduct = useMemo(
@@ -73,11 +112,16 @@ export function QaleenAdmin() {
   const activeCount = catalog.products.filter((product) => product.isActive).length;
   const inventoryValue = catalog.products.reduce((sum, product) => sum + product.price * product.stock, 0);
 
-  function saveCatalog(nextCatalog = catalog) {
+  async function saveCatalog(nextCatalog = catalog) {
     const normalized = normalizeQaleenCatalog(nextCatalog);
     setCatalog(normalized);
     window.localStorage.setItem(qaleenCatalogStorageKey, JSON.stringify(normalized));
-    setSavedAt(new Date().toLocaleTimeString());
+    try {
+      const savedOnline = await saveQaleenCatalog(normalized);
+      setSavedAt(`${new Date().toLocaleTimeString()}${savedOnline ? " online" : " local"}`);
+    } catch {
+      setSavedAt(`${new Date().toLocaleTimeString()} local`);
+    }
   }
 
   function updateSettings<K extends keyof QaleenSettings>(key: K, value: QaleenSettings[K]) {
@@ -102,33 +146,29 @@ export function QaleenAdmin() {
     const nextProducts = catalog.products.filter((product) => product.id !== id);
     const nextCatalog = { ...catalog, products: nextProducts.length ? nextProducts : [emptyProduct()] };
     setSelectedId(nextCatalog.products[0].id);
-    saveCatalog(nextCatalog);
+    void saveCatalog(nextCatalog);
     setActiveTab("products");
   }
 
   function resetCatalog() {
     setSelectedId(defaultQaleenCatalog.products[0]?.id || "");
-    saveCatalog(defaultQaleenCatalog);
+    void saveCatalog(defaultQaleenCatalog);
   }
 
-  function uploadImage(callback: (dataUrl: string) => void, event: ChangeEvent<HTMLInputElement>) {
+  async function uploadImage(callback: (imageUrl: string) => void, event: ChangeEvent<HTMLInputElement>, folder = "products") {
     const file = event.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") callback(reader.result);
-    };
-    reader.readAsDataURL(file);
+    const uploadedUrl = await uploadQaleenImage(file, folder).catch(() => null);
+    callback(uploadedUrl || await fileToDataUrl(file));
   }
 
   function uploadGallery(product: QaleenProduct, event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
-    Promise.all(files.map((file) => new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.readAsDataURL(file);
-    }))).then((images) => {
+    Promise.all(files.map(async (file) => {
+      const uploadedUrl = await uploadQaleenImage(file, "products").catch(() => null);
+      return uploadedUrl || await fileToDataUrl(file);
+    })).then((images) => {
       const cleanImages = images.filter(Boolean);
       updateProduct(product.id, "images", Array.from(new Set([...(product.images || []), ...cleanImages])) as QaleenProduct["images"]);
       if (!product.image && cleanImages[0]) updateProduct(product.id, "image", cleanImages[0]);
@@ -151,10 +191,15 @@ export function QaleenAdmin() {
     setIsAuthed(false);
   }
 
-  function updateOrderStatus(id: string, status: QaleenOrder["status"]) {
+  async function updateOrderStatus(id: string, status: QaleenOrder["status"]) {
     const nextOrders = orders.map((order) => order.id === id ? { ...order, status } : order);
     setOrders(nextOrders);
     window.localStorage.setItem(qaleenOrderStorageKey, JSON.stringify(nextOrders));
+    try {
+      await updateQaleenOrderStatus(id, status);
+    } catch {
+      // The visible admin state is still updated locally.
+    }
   }
 
   if (!isAuthed) {
@@ -189,7 +234,7 @@ export function QaleenAdmin() {
               <Eye className="h-4 w-4" />
               Public
             </Link>
-            <button onClick={() => saveCatalog()} className="inline-flex h-9 items-center gap-2 bg-[#111111] px-3 text-xs font-black uppercase text-white">
+            <button onClick={() => { void saveCatalog(); }} className="inline-flex h-9 items-center gap-2 bg-[#111111] px-3 text-xs font-black uppercase text-white">
               <Save className="h-4 w-4" />
               Save
             </button>
@@ -233,7 +278,7 @@ export function QaleenAdmin() {
               settings={catalog.settings}
               savedAt={savedAt}
               onChange={updateSettings}
-              onUploadHero={(event) => uploadImage((dataUrl) => updateSettings("heroImage", dataUrl), event)}
+              onUploadHero={(event) => { void uploadImage((imageUrl) => updateSettings("heroImage", imageUrl), event, "hero"); }}
             />
           ) : null}
 
@@ -246,14 +291,14 @@ export function QaleenAdmin() {
               product={selectedProduct}
               onChange={updateProduct}
               onDelete={() => deleteProduct(selectedProduct.id)}
-              onUpload={(event) => uploadImage((dataUrl) => updateProduct(selectedProduct.id, "image", dataUrl), event)}
+              onUpload={(event) => { void uploadImage((imageUrl) => updateProduct(selectedProduct.id, "image", imageUrl), event, "products"); }}
               onGalleryUpload={(event) => uploadGallery(selectedProduct, event)}
             />
           ) : null}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => saveCatalog()} className="inline-flex h-10 items-center gap-2 bg-[#111111] px-4 text-xs font-black uppercase text-white">
+          <button onClick={() => { void saveCatalog(); }} className="inline-flex h-10 items-center gap-2 bg-[#111111] px-4 text-xs font-black uppercase text-white">
             <Save className="h-4 w-4" />
             Save all changes
           </button>

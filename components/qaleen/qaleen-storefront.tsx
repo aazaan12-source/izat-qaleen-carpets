@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ClipboardList, Heart, Menu, MessageCircle, Minus, Phone, Plus, Search, ShoppingBag, SlidersHorizontal, Truck, X, ZoomIn, type LucideIcon } from "lucide-react";
+import { fetchQaleenCatalog, saveQaleenOrder } from "@/lib/qaleen-api-client";
 import {
   defaultQaleenCatalog,
   formatQaleenMoney,
@@ -47,12 +48,27 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     try {
       const stored = window.localStorage.getItem(qaleenCatalogStorageKey);
       if (stored) setCatalog(normalizeQaleenCatalog(JSON.parse(stored)));
     } catch {
       setCatalog(defaultQaleenCatalog);
     }
+
+    fetchQaleenCatalog().then((remoteCatalog) => {
+      if (!isMounted || !remoteCatalog) return;
+      const normalized = normalizeQaleenCatalog(remoteCatalog);
+      setCatalog(normalized);
+      window.localStorage.setItem(qaleenCatalogStorageKey, JSON.stringify(normalized));
+    }).catch(() => {
+      // Local storage remains the offline fallback.
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -172,7 +188,7 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
     scrollToSection("collections");
   }
 
-  function saveOrderRecord() {
+  async function saveOrderRecord() {
     if (!cartProducts.length || typeof window === "undefined") return;
     const order: QaleenOrder = {
       id: `QA-${Date.now()}`,
@@ -194,6 +210,11 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
     const stored = window.localStorage.getItem(qaleenOrderStorageKey);
     const orders = stored ? JSON.parse(stored) as QaleenOrder[] : [];
     window.localStorage.setItem(qaleenOrderStorageKey, JSON.stringify([order, ...orders]));
+    try {
+      await saveQaleenOrder(order);
+    } catch {
+      // The browser copy already saved the order if Supabase is unavailable.
+    }
   }
 
   function changeCart(id: string, delta: number) {
@@ -620,7 +641,7 @@ export function QaleenStorefront({ initialCollection = "All", initialType = "All
               <div className="sticky bottom-0 -mx-4 mt-5 grid gap-2 border-t bg-[#DFD3C3] px-4 py-3 sm:-mx-5 sm:px-5 lg:static lg:mx-0 lg:border-t-0 lg:bg-transparent lg:p-0">
                 <a
                   href={orderWhatsappUrl}
-                  onClick={saveOrderRecord}
+                  onClick={() => { void saveOrderRecord(); }}
                   target="_blank"
                   rel="noreferrer"
                   className={`inline-flex h-11 items-center justify-center gap-2 px-4 text-xs font-black uppercase text-white ${cartProducts.length ? "bg-[#111111]" : "pointer-events-none bg-[#999999]"}`}
