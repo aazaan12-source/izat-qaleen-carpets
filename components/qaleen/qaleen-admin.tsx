@@ -24,6 +24,7 @@ import {
 } from "@/lib/qaleen-catalog";
 
 type AdminTab = "settings" | "products" | "editor" | "orders";
+type SaveStatus = "idle" | "saving" | "saved" | "local";
 
 const emptyProduct = (): QaleenProduct => ({
   id: `rug-${Date.now()}`,
@@ -59,6 +60,8 @@ export function QaleenAdmin() {
   const [selectedId, setSelectedId] = useState(defaultQaleenCatalog.products[0]?.id || "");
   const [activeTab, setActiveTab] = useState<AdminTab>("products");
   const [savedAt, setSavedAt] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveMessage, setSaveMessage] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -111,16 +114,31 @@ export function QaleenAdmin() {
 
   const activeCount = catalog.products.filter((product) => product.isActive).length;
   const inventoryValue = catalog.products.reduce((sum, product) => sum + product.price * product.stock, 0);
+  const isSaving = saveStatus === "saving";
 
   async function saveCatalog(nextCatalog = catalog) {
     const normalized = normalizeQaleenCatalog(nextCatalog);
     setCatalog(normalized);
     window.localStorage.setItem(qaleenCatalogStorageKey, JSON.stringify(normalized));
+    setSaveStatus("saving");
+    setSaveMessage("Saving catalog...");
     try {
       const savedOnline = await saveQaleenCatalog(normalized);
-      setSavedAt(`${new Date().toLocaleTimeString()}${savedOnline ? " online" : " local"}`);
+      const time = new Date().toLocaleTimeString();
+      if (savedOnline) {
+        setSavedAt(`${time} online`);
+        setSaveStatus("saved");
+        setSaveMessage(`Saved online at ${time}. Supabase now has the latest catalog.`);
+      } else {
+        setSavedAt(`${time} local`);
+        setSaveStatus("local");
+        setSaveMessage("Saved on this browser only. Check SUPABASE_SECRET_KEY and redeploy Vercel.");
+      }
     } catch {
-      setSavedAt(`${new Date().toLocaleTimeString()} local`);
+      const time = new Date().toLocaleTimeString();
+      setSavedAt(`${time} local`);
+      setSaveStatus("local");
+      setSaveMessage("Saved on this browser only. Supabase did not accept the save yet.");
     }
   }
 
@@ -234,9 +252,9 @@ export function QaleenAdmin() {
               <Eye className="h-4 w-4" />
               Public
             </Link>
-            <button onClick={() => { void saveCatalog(); }} className="inline-flex h-9 items-center gap-2 bg-[#111111] px-3 text-xs font-black uppercase text-white">
+            <button disabled={isSaving} onClick={() => { void saveCatalog(); }} className="inline-flex h-9 items-center gap-2 bg-[#111111] px-3 text-xs font-black uppercase text-white disabled:bg-[#777777]">
               <Save className="h-4 w-4" />
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </button>
             <button onClick={logout} className="inline-flex h-9 items-center gap-2 border bg-white px-3 text-xs font-black uppercase">
               Logout
@@ -251,6 +269,21 @@ export function QaleenAdmin() {
           <Stat label="Total products" value={String(catalog.products.length)} />
           <Stat label="Inventory value" value={formatQaleenMoney(inventoryValue)} />
         </div>
+
+        {saveMessage ? (
+          <div
+            role="status"
+            className={`mt-4 border px-4 py-3 text-sm font-bold ${
+              saveStatus === "saved"
+                ? "border-green-300 bg-green-50 text-green-800"
+                : saveStatus === "saving"
+                  ? "border-[#D0B8A8] bg-white text-[#6f5648]"
+                  : "border-amber-300 bg-amber-50 text-amber-800"
+            }`}
+          >
+            {saveMessage}
+          </div>
+        ) : null}
 
         <div className="mt-4 flex gap-2 overflow-x-auto border-b bg-white px-2 pt-2">
           <TabButton active={activeTab === "products"} onClick={() => setActiveTab("products")}>Products</TabButton>
@@ -298,9 +331,9 @@ export function QaleenAdmin() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => { void saveCatalog(); }} className="inline-flex h-10 items-center gap-2 bg-[#111111] px-4 text-xs font-black uppercase text-white">
+          <button disabled={isSaving} onClick={() => { void saveCatalog(); }} className="inline-flex h-10 items-center gap-2 bg-[#111111] px-4 text-xs font-black uppercase text-white disabled:bg-[#777777]">
             <Save className="h-4 w-4" />
-            Save all changes
+            {isSaving ? "Saving..." : "Save all changes"}
           </button>
           <button onClick={resetCatalog} className="inline-flex h-10 items-center gap-2 border bg-white px-4 text-xs font-black uppercase">
             <RotateCcw className="h-4 w-4" />
