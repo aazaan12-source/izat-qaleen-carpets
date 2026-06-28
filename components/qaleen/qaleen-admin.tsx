@@ -134,11 +134,11 @@ export function QaleenAdmin() {
         setSaveStatus("local");
         setSaveMessage("Saved on this browser only. Check SUPABASE_SECRET_KEY and redeploy Vercel.");
       }
-    } catch {
+    } catch (error) {
       const time = new Date().toLocaleTimeString();
       setSavedAt(`${time} local`);
       setSaveStatus("local");
-      setSaveMessage("Saved on this browser only. Supabase did not accept the save yet.");
+      setSaveMessage(`Saved on this browser only. Online save failed: ${error instanceof Error ? error.message : "Supabase did not accept the save yet."}`);
     }
   }
 

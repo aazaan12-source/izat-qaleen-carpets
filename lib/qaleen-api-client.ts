@@ -23,7 +23,12 @@ export async function saveQaleenCatalog(catalog: QaleenCatalog) {
     body: JSON.stringify({ catalog })
   });
 
-  return response.ok;
+  if (!response.ok) {
+    const body = await readJson<{ error?: string }>(response);
+    throw new Error(body?.error || "Catalog could not be saved online.");
+  }
+
+  return true;
 }
 
 export async function fetchQaleenOrders() {
@@ -41,7 +46,12 @@ export async function saveQaleenOrder(order: QaleenOrder) {
     body: JSON.stringify({ order })
   });
 
-  return response.ok;
+  if (!response.ok) {
+    const body = await readJson<{ error?: string }>(response);
+    throw new Error(body?.error || "Order could not be saved online.");
+  }
+
+  return true;
 }
 
 export async function updateQaleenOrderStatus(id: string, status: QaleenOrder["status"]) {
@@ -51,7 +61,12 @@ export async function updateQaleenOrderStatus(id: string, status: QaleenOrder["s
     body: JSON.stringify({ id, status })
   });
 
-  return response.ok;
+  if (!response.ok) {
+    const body = await readJson<{ error?: string }>(response);
+    throw new Error(body?.error || "Order status could not be updated online.");
+  }
+
+  return true;
 }
 
 export async function uploadQaleenImage(file: File, folder: string) {
@@ -63,7 +78,10 @@ export async function uploadQaleenImage(file: File, folder: string) {
     method: "POST",
     body: formData
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    const body = await readJson<{ error?: string }>(response);
+    throw new Error(body?.error || "Image could not be uploaded online.");
+  }
 
   const body = await readJson<{ url: string }>(response);
   return body?.url || null;

@@ -21,18 +21,21 @@ type SupabaseOrderRow = {
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
   const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   return {
     url,
     secretKey,
-    isConfigured: Boolean(url && secretKey)
+    publishableKey,
+    key: secretKey || publishableKey,
+    isConfigured: Boolean(url && (secretKey || publishableKey))
   };
 }
 
-function supabaseHeaders(extra?: HeadersInit): HeadersInit {
-  const { secretKey } = getSupabaseConfig();
+function supabaseHeaders(key: string, extra?: HeadersInit): HeadersInit {
   const headers: Record<string, string> = {
-    apikey: secretKey || "",
+    apikey: key,
+    authorization: `Bearer ${key}`
   };
 
   if (extra instanceof Headers) {
@@ -47,28 +50,30 @@ function supabaseHeaders(extra?: HeadersInit): HeadersInit {
     Object.assign(headers, extra);
   }
 
-  if (secretKey && !secretKey.startsWith("sb_secret_") && !secretKey.startsWith("sb_publishable_")) {
-    headers.authorization = `Bearer ${secretKey}`;
-  }
-
   return headers;
 }
 
 async function supabaseJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const { url, isConfigured } = getSupabaseConfig();
+  const { url, key, secretKey, publishableKey, isConfigured } = getSupabaseConfig();
 
   if (!url || !isConfigured) {
-    throw new Error("Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY.");
+    throw new Error("Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
   }
 
-  const response = await fetch(`${url}${path}`, {
-    ...init,
-    headers: supabaseHeaders({
-      "content-type": "application/json",
-      ...(init?.headers || {})
-    }),
-    cache: "no-store"
-  });
+  const request = (activeKey: string) => fetch(`${url}${path}`, {
+      ...init,
+      headers: supabaseHeaders(activeKey, {
+        "content-type": "application/json",
+        ...(init?.headers || {})
+      }),
+      cache: "no-store"
+    });
+
+  let response = await request(key || "");
+
+  if (response.status === 401 && secretKey && publishableKey && secretKey !== publishableKey) {
+    response = await request(publishableKey);
+  }
 
   if (!response.ok) {
     const message = await response.text();
@@ -174,7 +179,7 @@ export function makeSupabaseImageUrl(path: string) {
 }
 
 export async function uploadSupabaseImage(file: File, folder = "products") {
-  const { url, isConfigured } = getSupabaseConfig();
+  const { url, key, secretKey, publishableKey, isConfigured } = getSupabaseConfig();
 
   if (!url || !isConfigured) {
     throw new Error("Supabase image upload is not configured.");
@@ -183,15 +188,22 @@ export async function uploadSupabaseImage(file: File, folder = "products") {
   const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const safeFolder = folder.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "products";
   const path = `${safeFolder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
-  const response = await fetch(`${url}/storage/v1/object/${imageBucket}/${path}`, {
-    method: "PUT",
-    headers: supabaseHeaders({
-      "content-type": file.type || "application/octet-stream",
-      "x-upsert": "true"
-    }),
-    body: await file.arrayBuffer(),
-    cache: "no-store"
-  });
+  const body = await file.arrayBuffer();
+  const request = (activeKey: string) => fetch(`${url}/storage/v1/object/${imageBucket}/${path}`, {
+      method: "PUT",
+      headers: supabaseHeaders(activeKey, {
+        "content-type": file.type || "application/octet-stream",
+        "x-upsert": "true"
+      }),
+      body,
+      cache: "no-store"
+    });
+
+  let response = await request(key || "");
+
+  if (response.status === 401 && secretKey && publishableKey && secretKey !== publishableKey) {
+    response = await request(publishableKey);
+  }
 
   if (!response.ok) {
     const message = await response.text();
