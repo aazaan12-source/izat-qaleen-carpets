@@ -9,7 +9,7 @@ async function readJson<T>(response: Response): Promise<T | null> {
 }
 
 export async function fetchQaleenCatalog() {
-  const response = await fetch("/api/qaleen/catalog", { cache: "no-store" });
+  const response = await fetch(`/api/qaleen/catalog?t=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) return null;
 
   const body = await readJson<{ catalog: QaleenCatalog }>(response);
